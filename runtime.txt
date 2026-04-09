@@ -1,0 +1,3 @@
+# Needed to host on railway. Tells Railway which Python version to use. Without this it might use the wrong version.
+python-3.11.0
+ 

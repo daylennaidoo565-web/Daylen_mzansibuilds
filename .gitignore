@@ -1,3 +1,27 @@
-CLAUDE.md
-SKILL.md
+# Virtual environment — large folder, not needed on GitHub
 venv/
+
+# Python cache files — auto-generated, not needed
+__pycache__/
+*.pyc
+*.pyo
+
+# SQLite database files — never commit real data
+*.db
+instance/
+
+# Environment variables — contains secret keys, must never be public
+.env
+
+# Seed script — dummy data only for local development
+seed.py
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# VS Code settings
+.vscode/
+
+# Pytest cache
+.pytest_cache/
