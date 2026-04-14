@@ -1,0 +1,341 @@
+{% extends 'base.html' %}
+<!-- Inherits the navbar, footer and base styles from base.html -->
+
+{% block title %}Sign in — MzansiBuilds{% endblock %}
+<!-- Sets the browser tab title for the login page -->
+
+{% block head %}
+<!-- Load the hCaptcha script — required for the bot protection checkbox to appear -->
+<script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+
+<style>
+
+  /* Full page wrapper — centres the login card vertically and horizontally */
+  .auth-wrap {
+    min-height: calc(100vh - 60px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+    background: #0a0a0a;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Subtle green glow behind the card — purely decorative */
+  .auth-wrap::before {
+    content: '';
+    position: absolute;
+    top: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 500px;
+    height: 280px;
+    background: radial-gradient(ellipse at center, rgba(168,255,54,0.07) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* The login card itself — dark background with a subtle border */
+  .auth-card {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 440px;
+    background: #111;
+    border: 1px solid #1f1f1f;
+    border-radius: 16px;
+    padding: 40px 36px;
+    box-shadow: 0 4px 40px rgba(168,255,54,0.06), 0 1px 8px rgba(0,0,0,0.6);
+  }
+
+  /* Logo at the top of the card — clicking it goes back to the home page */
+  .auth-logo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    text-align: center;
+    margin-bottom: 28px;
+    text-decoration: none;
+    display: block;
+  }
+
+  /* Green part of the logo */
+  .auth-logo .acc  { color: #a8ff36; }
+
+  /* White part of the logo */
+  .auth-logo .rest { color: #fff; }
+
+  /* Main heading on the card */
+  .auth-heading {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: #f4f4f5;
+    text-align: center;
+    margin-bottom: 6px;
+  }
+
+  /* Subtitle text below the heading */
+  .auth-sub {
+    font-size: 14px;
+    color: #777;
+    text-align: center;
+    margin-bottom: 28px;
+    line-height: 1.6;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  /* Thin horizontal line separating the header from the form */
+  .divider {
+    height: 1px;
+    background: #1f1f1f;
+    margin-bottom: 28px;
+  }
+
+  /* Wrapper for each form field — adds spacing between fields */
+  .field {
+    margin-bottom: 20px;
+  }
+
+  /* Label above each input */
+  .field label {
+    display: block;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: #bbb;
+    margin-bottom: 8px;
+  }
+
+  /* The green asterisk that marks required fields */
+  .field label .req {
+    color: #a8ff36;
+    margin-left: 2px;
+  }
+
+  /* Dark styled input fields */
+  .field input {
+    width: 100%;
+    background: #0d0d0d;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    color: #f4f4f5;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  /* Placeholder text colour */
+  .field input::placeholder {
+    color: #444;
+  }
+
+  /* Green border and glow when the user clicks into a field */
+  .field input:focus {
+    border-color: #a8ff36;
+    box-shadow: 0 0 0 3px rgba(168,255,54,0.08);
+  }
+
+  /* Wrapper for the password field — needed to position the show/hide button */
+  .pw-wrap {
+    position: relative;
+  }
+
+  /* Extra right padding so text doesn't overlap the eye icon */
+  .pw-wrap input {
+    padding-right: 44px;
+  }
+
+  /* Show/hide password toggle button inside the input */
+  .pw-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #555;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease;
+    font-size: 14px;
+    min-width: 28px;
+    min-height: 28px;
+  }
+
+  /* Eye icon turns green on hover */
+  .pw-toggle:hover {
+    color: #a8ff36;
+  }
+
+  /* Centres the hCaptcha checkbox and adds breathing room around it */
+  .captcha-wrap {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+  }
+
+  /* Green submit button */
+  .submit-btn {
+    width: 100%;
+    padding: 13px 24px;
+    background: #a8ff36;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: #0a0a0a;
+    cursor: pointer;
+    margin-top: 4px;
+    transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+    letter-spacing: -0.01em;
+  }
+
+  /* Lighter green and glow on hover */
+  .submit-btn:hover {
+    background: #c4ff5e;
+    box-shadow: 0 0 24px rgba(168,255,54,0.22);
+  }
+
+  /* Slight scale down when clicked — gives a pressed feeling */
+  .submit-btn:active {
+    transform: scale(0.98);
+  }
+
+  /* Green outline when navigating with keyboard for accessibility */
+  .submit-btn:focus-visible {
+    outline: 2px solid #a8ff36;
+    outline-offset: 3px;
+  }
+
+  /* Link at the bottom of the card — takes the user to register */
+  .auth-footer {
+    text-align: center;
+    margin-top: 24px;
+    font-size: 14px;
+    color: #666;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  .auth-footer a {
+    color: #a8ff36;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  /* Link turns lighter green on hover */
+  .auth-footer a:hover {
+    color: #c4ff5e;
+  }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-card">
+
+    <!-- Logo — clicking takes the user back to the landing page -->
+    <a href="{{ url_for('index') }}" class="auth-logo">
+      <span class="acc">Mzansi</span><span class="rest">Builds</span>
+    </a>
+
+    <!-- Card heading and subtitle -->
+    <h1 class="auth-heading">Welcome back</h1>
+    <p class="auth-sub">Sign in to continue building in public.</p>
+
+    <!-- Visual divider between the header and the form -->
+    <div class="divider"></div>
+
+    <!-- Login form — posts to the /login route in app.py -->
+    <form method="POST" action="{{ url_for('login') }}" novalidate>
+
+      <!-- Email field — novalidate disables browser validation so Flask handles it -->
+      <div class="field">
+        <label for="email">
+          Email address <span class="req">*</span>
+        </label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          placeholder="you@example.com"
+          required
+          autocomplete="email"
+          value="{{ request.form.get('email', '') }}"
+        >
+        <!-- value keeps the email filled in if the form is resubmitted after an error -->
+      </div>
+
+      <!-- Password field with show/hide toggle button -->
+      <div class="field">
+        <label for="password">
+          Password <span class="req">*</span>
+        </label>
+        <div class="pw-wrap">
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="Your password"
+            required
+            autocomplete="current-password"
+          >
+          <!-- Eye icon button — toggles between showing and hiding the password -->
+          <button
+            type="button"
+            class="pw-toggle"
+            aria-label="Toggle password visibility"
+            onclick="
+              var i  = document.getElementById('password');
+              var ic = this.querySelector('i');
+              if (i.type === 'password') {
+                i.type = 'text';
+                ic.className = 'fa fa-eye-slash';
+              } else {
+                i.type = 'password';
+                ic.className = 'fa fa-eye';
+              }
+            "
+          >
+            <i class="fa fa-eye"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- hCaptcha checkbox — user must tick this to prove they are not a bot -->
+      <!-- data-sitekey comes from app.py and is passed to this template -->
+      <!-- data-theme="dark" matches the dark design of the page -->
+      <div class="captcha-wrap">
+        <div class="h-captcha"
+             data-sitekey="{{ site_key }}"
+             data-theme="dark">
+        </div>
+      </div>
+
+      <!-- Submit button — sends the form to the login route -->
+      <button type="submit" class="submit-btn">
+        Sign in &rarr;
+      </button>
+
+    </form>
+
+    <!-- Link to the register page for users who don't have an account yet -->
+    <p class="auth-footer">
+      No account yet?
+      <a href="{{ url_for('register') }}">Join for free</a>
+    </p>
+
+  </div>
+</div>
+{% endblock %}
