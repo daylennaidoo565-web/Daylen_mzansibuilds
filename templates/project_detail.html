@@ -1,0 +1,430 @@
+{% extends 'base.html' %}
+{% block title %}{{ project.title }} — MzansiBuilds{% endblock %}
+
+{% block content %}
+<style>
+.dash-layout{display:flex;min-height:calc(100vh - 60px);background:#0a0a0a}
+
+/* SIDEBAR */
+.sidebar{width:240px;flex-shrink:0;background:#0d0d0d;border-right:1px solid #1f1f1f;display:flex;flex-direction:column;padding:24px 0;position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto}
+.sidebar-user{padding:0 20px 24px;border-bottom:1px solid #1f1f1f;margin-bottom:16px}
+.sidebar-avatar{width:44px;height:44px;border-radius:50%;background:#0f2a0f;border:2px solid #a8ff36;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#a8ff36;margin-bottom:10px;font-family:'Space Grotesk',sans-serif}
+.sidebar-name{font-size:14px;font-weight:700;color:#f4f4f5;font-family:'Space Grotesk',sans-serif;letter-spacing:-0.01em}
+.sidebar-email{font-size:11px;color:#555;margin-top:2px;font-family:'Space Grotesk',sans-serif}
+.sidebar-section{padding:0 12px;margin-bottom:8px}
+.sidebar-label{font-size:10px;font-weight:600;color:#444;text-transform:uppercase;letter-spacing:.1em;padding:0 8px;margin-bottom:6px;font-family:'Space Grotesk',sans-serif}
+.sidebar-link{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;font-size:13px;font-weight:500;color:#888;text-decoration:none;transition:background .2s,color .2s;font-family:'Space Grotesk',sans-serif}
+.sidebar-link:hover{background:#161616;color:#f4f4f5}
+.sidebar-link.active{background:#0f2a0f;color:#a8ff36}
+.sidebar-link svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.sidebar-divider{height:1px;background:#1a1a1a;margin:12px 20px}
+.sidebar-new-btn{margin:12px 12px 0;padding:10px 14px;background:#a8ff36;color:#0a0a0a;border-radius:8px;font-size:13px;font-weight:700;text-align:center;text-decoration:none;display:block;font-family:'Space Grotesk',sans-serif;transition:opacity .2s}
+.sidebar-new-btn:hover{opacity:.85}
+
+/* MAIN */
+.dash-main{flex:1;padding:40px;overflow-x:hidden}
+
+/* BREADCRUMB */
+.breadcrumb{display:flex;align-items:center;gap:8px;font-size:13px;color:#555;margin-bottom:24px;font-family:'Space Grotesk',sans-serif}
+.breadcrumb a{color:#666;text-decoration:none;transition:color .2s}
+.breadcrumb a:hover{color:#a8ff36}
+.breadcrumb svg{width:12px;height:12px;stroke:#444;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* PROJECT HEADER */
+.proj-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:28px;flex-wrap:wrap}
+.proj-header-left{flex:1;min-width:0}
+.proj-title{font-family:'Space Grotesk',sans-serif;font-size:clamp(22px,3vw,32px);font-weight:700;color:#f4f4f5;letter-spacing:-0.03em;margin-bottom:8px}
+.proj-meta{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.proj-author{font-size:13px;color:#666;font-family:'Space Grotesk',sans-serif}
+.proj-author span{color:#a8ff36;font-weight:600}
+.proj-date{font-size:12px;color:#444;font-family:'Space Grotesk',sans-serif}
+.stage-pill{font-size:10px;font-weight:700;padding:4px 10px;border-radius:100px;text-transform:uppercase;white-space:nowrap;font-family:'Space Grotesk',sans-serif;letter-spacing:.04em}
+.s-planning{background:#0f0f2a;color:#7a9aff;border:1px solid #1f1f4a}
+.s-progress{background:#0f2a0f;color:#a8ff36;border:1px solid #1f4a1f}
+.s-help{background:#2a1a05;color:#ffaa5a;border:1px solid #4a2a0a}
+.s-done{background:#1a2a0f;color:#a8ff36;border:1px solid #2a4a1f}
+.proj-header-actions{display:flex;gap:8px;flex-shrink:0}
+.btn-sm{padding:8px 16px;border-radius:100px;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;text-decoration:none;border:1px solid #333;color:#888;transition:all .2s;cursor:pointer;background:transparent}
+.btn-sm:hover{color:#f4f4f5;border-color:#555}
+
+/* CONTENT GRID */
+.proj-grid{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start}
+
+/* CARDS */
+.proj-card{background:#0d0d0d;border:1px solid #1f1f1f;border-radius:12px;padding:24px;margin-bottom:20px}
+.card-title{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;color:#f4f4f5;letter-spacing:-0.01em;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.card-title-left{display:flex;align-items:center;gap:8px}
+.card-title svg{width:14px;height:14px;stroke:#a8ff36;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* DESCRIPTION */
+.proj-description{font-size:14px;color:#999;line-height:1.75;font-family:'Space Grotesk',sans-serif}
+.support-box{background:#111;border:1px solid #1f2d1f;border-radius:8px;padding:14px 16px;margin-top:16px}
+.support-label{font-size:10px;font-weight:600;color:#a8ff36;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;font-family:'Space Grotesk',sans-serif}
+.support-text{font-size:13px;color:#888;line-height:1.6;font-family:'Space Grotesk',sans-serif}
+
+/* PROGRESS */
+.prog-wrap{margin-bottom:16px}
+.prog-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.prog-label{font-size:12px;color:#666;font-family:'Space Grotesk',sans-serif}
+.prog-count{font-size:12px;font-weight:700;color:#a8ff36;font-family:'Space Grotesk',sans-serif}
+.prog-bar{height:6px;background:#1a1a1a;border-radius:100px;overflow:hidden}
+.prog-fill{height:100%;background:#a8ff36;border-radius:100px;transition:width .6s ease}
+
+/* MILESTONES */
+.milestone-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.milestone-item{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;background:#111;border:1px solid #1f1f1f;border-radius:8px;transition:border-color .2s}
+.milestone-item.done{border-color:#1f3a1f;background:#0a1a0a}
+.milestone-item.done .m-title{color:#555;text-decoration:line-through}
+.m-check-form{flex-shrink:0;margin-top:1px}
+.m-check-btn{width:20px;height:20px;border-radius:50%;border:1.5px solid #333;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;padding:0}
+.m-check-btn:hover{border-color:#a8ff36}
+.milestone-item.done .m-check-btn{background:#a8ff36;border-color:#a8ff36}
+.m-check-btn svg{width:10px;height:10px;stroke:#0a0a0a;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;display:none}
+.milestone-item.done .m-check-btn svg{display:block}
+.m-body{flex:1;min-width:0}
+.m-title{font-size:13px;font-weight:600;color:#e0e0e0;font-family:'Space Grotesk',sans-serif;line-height:1.4}
+.m-desc{font-size:11px;color:#555;margin-top:3px;font-family:'Space Grotesk',sans-serif;line-height:1.5}
+
+/* ADD MILESTONE FORM */
+.add-milestone-form{background:#111;border:1px solid #1f1f1f;border-radius:8px;padding:14px}
+.add-milestone-form input,.add-milestone-form textarea{width:100%;background:#0d0d0d;border:1px solid #2a2a2a;border-radius:6px;padding:9px 12px;font-family:'Space Grotesk',sans-serif;font-size:13px;color:#f4f4f5;outline:none;margin-bottom:8px;transition:border-color .2s}
+.add-milestone-form input::placeholder,.add-milestone-form textarea::placeholder{color:#444}
+.add-milestone-form input:focus,.add-milestone-form textarea:focus{border-color:#a8ff36}
+.add-milestone-form textarea{resize:vertical}
+.add-milestone-form button{width:100%;padding:9px;background:#a8ff36;color:#0a0a0a;border:none;border-radius:6px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:opacity .2s}
+.add-milestone-form button:hover{opacity:.85}
+
+/* COMMENTS */
+.comment-list{display:flex;flex-direction:column;gap:12px;margin-bottom:16px}
+.comment{display:flex;gap:10px;align-items:flex-start}
+.comment-av{width:28px;height:28px;border-radius:50%;background:#0f1f0f;border:1px solid #1f3a1f;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#a8ff36;flex-shrink:0;font-family:'Space Grotesk',sans-serif}
+.comment-body{flex:1;background:#111;border:1px solid #1f1f1f;border-radius:8px;padding:10px 14px}
+.comment-meta{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.comment-author{font-size:12px;font-weight:700;color:#a8ff36;font-family:'Space Grotesk',sans-serif}
+.comment-time{font-size:11px;color:#444;font-family:'Space Grotesk',sans-serif}
+.comment-text{font-size:13px;color:#ccc;line-height:1.6;font-family:'Space Grotesk',sans-serif}
+.no-comments{font-size:13px;color:#444;text-align:center;padding:16px 0;font-family:'Space Grotesk',sans-serif}
+
+/* COMMENT FORM */
+.comment-form{display:flex;gap:10px;align-items:flex-start}
+.comment-form-av{width:28px;height:28px;border-radius:50%;background:#0f1f0f;border:1px solid #1f3a1f;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#a8ff36;flex-shrink:0;font-family:'Space Grotesk',sans-serif}
+.comment-form-right{flex:1;display:flex;flex-direction:column;gap:8px}
+.comment-form textarea{width:100%;background:#111;border:1px solid #2a2a2a;border-radius:8px;padding:10px 14px;font-family:'Space Grotesk',sans-serif;font-size:13px;color:#f4f4f5;outline:none;resize:none;transition:border-color .2s}
+.comment-form textarea::placeholder{color:#444}
+.comment-form textarea:focus{border-color:#a8ff36}
+.comment-form button{align-self:flex-end;padding:8px 18px;background:#a8ff36;color:#0a0a0a;border:none;border-radius:100px;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:opacity .2s}
+.comment-form button:hover{opacity:.85}
+.empty-ms{font-size:12px;color:#444;text-align:center;padding:12px 0;font-family:'Space Grotesk',sans-serif}
+
+/* ── CELEBRATION POPUP ── */
+.popup-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);backdrop-filter:blur(8px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.popup-card{background:#0d0d0d;border:1px solid #2a4a1a;border-radius:24px;padding:48px 40px;max-width:460px;width:100%;text-align:center;position:relative;animation:slideUp .4s cubic-bezier(.2,1,.3,1);box-shadow:0 0 100px rgba(168,255,54,0.12),0 0 0 1px #a8ff3620}
+@keyframes slideUp{from{opacity:0;transform:translateY(36px)}to{opacity:1;transform:translateY(0)}}
+.popup-emoji{font-size:56px;margin-bottom:16px;display:block;animation:pop .5s cubic-bezier(.2,1,.3,1) .2s both}
+@keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
+.popup-title{font-family:'Space Grotesk',sans-serif;font-size:30px;font-weight:700;color:#f4f4f5;letter-spacing:-0.03em;margin-bottom:10px}
+.popup-title em{color:#a8ff36;font-style:normal}
+.popup-sub{font-size:14px;color:#777;font-family:'Space Grotesk',sans-serif;line-height:1.75;margin-bottom:28px}
+.popup-proj-name{background:#111;border:1px solid #1f3a1f;border-radius:10px;padding:14px 18px;margin-bottom:28px}
+.popup-proj-label{font-size:10px;font-weight:600;color:#a8ff36;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;font-family:'Space Grotesk',sans-serif}
+.popup-proj-title{font-size:15px;font-weight:700;color:#f4f4f5;font-family:'Space Grotesk',sans-serif;letter-spacing:-0.01em}
+.popup-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.popup-btn-main{padding:12px 26px;background:#a8ff36;color:#0a0a0a;border-radius:100px;font-size:13px;font-weight:700;text-decoration:none;font-family:'Space Grotesk',sans-serif;transition:opacity .2s;border:none;cursor:pointer}
+.popup-btn-main:hover{opacity:.85}
+.popup-btn-ghost{padding:12px 22px;background:transparent;color:#888;border:1px solid #333;border-radius:100px;font-size:13px;font-weight:600;font-family:'Space Grotesk',sans-serif;transition:all .2s;cursor:pointer}
+.popup-btn-ghost:hover{color:#f4f4f5;border-color:#555}
+
+/* CONFETTI PARTICLES */
+.confetti-container{position:fixed;inset:0;pointer-events:none;z-index:9998;overflow:hidden}
+.confetti-piece{position:absolute;top:-10px;animation:confettiFall linear forwards}
+@keyframes confettiFall{0%{transform:translateY(0) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
+
+@media(max-width:1000px){.proj-grid{grid-template-columns:1fr}}
+@media(max-width:640px){
+  .sidebar{display:none}
+  .dash-main{padding:20px 16px}
+  .proj-header{flex-direction:column}
+  .popup-card{padding:36px 24px}
+}
+</style>
+
+<div class="dash-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar">{{ current_user.username[0].upper() }}</div>
+      <div class="sidebar-name">{{ current_user.username }}</div>
+      <div class="sidebar-email">{{ current_user.email }}</div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Main</div>
+      <a href="{{ url_for('dashboard') }}" class="sidebar-link">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </a>
+      <a href="{{ url_for('feed') }}" class="sidebar-link">
+        <svg viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+        Live Feed
+      </a>
+      <a href="{{ url_for('celebration') }}" class="sidebar-link">
+        <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        Celebration Wall
+      </a>
+    </div>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">My Projects</div>
+      {% set user_projects = current_user.projects %}
+      {% if user_projects %}
+        {% for p in user_projects %}
+        <a href="{{ url_for('project_detail', project_id=p.id) }}"
+           class="sidebar-link {% if p.id == project.id %}active{% endif %}">
+          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          {{ p.title[:22] }}{% if p.title|length > 22 %}…{% endif %}
+        </a>
+        {% endfor %}
+      {% else %}
+        <p style="font-size:12px;color:#444;padding:4px 12px;font-family:'Space Grotesk',sans-serif">No projects yet</p>
+      {% endif %}
+    </div>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section">
+      <a href="{{ url_for('logout') }}" class="sidebar-link" style="color:#666">
+        <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Logout
+      </a>
+    </div>
+    <a href="{{ url_for('new_project') }}" class="sidebar-new-btn">+ New Project</a>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="dash-main">
+
+    <div class="breadcrumb">
+      <a href="{{ url_for('dashboard') }}">Dashboard</a>
+      <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+      <span style="color:#888">{{ project.title }}</span>
+    </div>
+
+    <div class="proj-header">
+      <div class="proj-header-left">
+        <div class="proj-title">{{ project.title }}</div>
+        <div class="proj-meta">
+          <span class="proj-author">by <span>{{ project.author.username }}</span></span>
+          <span class="proj-date">{{ project.created_at.strftime('%d %b %Y') }}</span>
+          {% if project.stage == 'Planning' %}
+            <span class="stage-pill s-planning">Planning</span>
+          {% elif project.stage == 'In Progress' %}
+            <span class="stage-pill s-progress">In Progress</span>
+          {% elif project.stage == 'Needs Help' %}
+            <span class="stage-pill s-help">Needs Help</span>
+          {% else %}
+            <span class="stage-pill s-done">Completed ✓</span>
+          {% endif %}
+        </div>
+      </div>
+      {% if project.user_id == current_user.id %}
+      <div class="proj-header-actions">
+        <a href="{{ url_for('edit_project', project_id=project.id) }}" class="btn-sm">Edit</a>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="proj-grid">
+
+      <!-- LEFT -->
+      <div>
+        <div class="proj-card">
+          <div class="card-title">
+            <div class="card-title-left">
+              <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              About this project
+            </div>
+          </div>
+          {% if project.description %}
+            <p class="proj-description">{{ project.description }}</p>
+          {% else %}
+            <p class="proj-description" style="color:#444;font-style:italic">No description yet.</p>
+          {% endif %}
+          {% if project.support_needed %}
+          <div class="support-box">
+            <div class="support-label">Looking for support</div>
+            <div class="support-text">{{ project.support_needed }}</div>
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="proj-card">
+          <div class="card-title">
+            <div class="card-title-left">
+              <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              Comments ({{ comments|length }})
+            </div>
+          </div>
+          {% if comments %}
+          <div class="comment-list">
+            {% for comment in comments %}
+            <div class="comment">
+              <div class="comment-av">{{ comment.author.username[0].upper() }}</div>
+              <div class="comment-body">
+                <div class="comment-meta">
+                  <span class="comment-author">{{ comment.author.username }}</span>
+                  <span class="comment-time">{{ comment.created_at.strftime('%d %b %Y') }}</span>
+                </div>
+                <div class="comment-text">{{ comment.body }}</div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+            <p class="no-comments">No comments yet — be the first to collaborate!</p>
+          {% endif %}
+          <form method="POST" action="{{ url_for('add_comment', project_id=project.id) }}" class="comment-form">
+            <div class="comment-form-av">{{ current_user.username[0].upper() }}</div>
+            <div class="comment-form-right">
+              <textarea name="body" rows="2" placeholder="Leave a comment or raise your hand to collaborate..." required></textarea>
+              <button type="submit">Post comment</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- RIGHT — MILESTONES -->
+      <div>
+        <div class="proj-card">
+          <div class="card-title">
+            <div class="card-title-left">
+              <svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+              Milestones
+            </div>
+            <span style="font-size:12px;color:#a8ff36;font-weight:700;font-family:'Space Grotesk',sans-serif">
+              {{ project.milestone_progress[0] }}/{{ project.milestone_progress[1] }}
+            </span>
+          </div>
+
+          {% if milestones %}
+          <div class="prog-wrap">
+            <div class="prog-header">
+              <span class="prog-label">Progress</span>
+              <span class="prog-count">{{ project.progress_percent }}%</span>
+            </div>
+            <div class="prog-bar">
+              <div class="prog-fill" style="width:{{ project.progress_percent }}%"></div>
+            </div>
+          </div>
+          {% endif %}
+
+          {% if milestones %}
+          <div class="milestone-list">
+            {% for milestone in milestones %}
+            <div class="milestone-item {% if milestone.completed %}done{% endif %}">
+              {% if project.user_id == current_user.id %}
+              <form method="POST" action="{{ url_for('toggle_milestone', milestone_id=milestone.id) }}" class="m-check-form">
+                <button type="submit" class="m-check-btn" title="{% if milestone.completed %}Mark incomplete{% else %}Mark complete{% endif %}">
+                  <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                </button>
+              </form>
+              {% else %}
+              <div style="width:20px;height:20px;border-radius:50%;border:1.5px solid {% if milestone.completed %}#a8ff36{% else %}#333{% endif %};background:{% if milestone.completed %}#a8ff36{% else %}transparent{% endif %};flex-shrink:0;display:flex;align-items:center;justify-content:center">
+                {% if milestone.completed %}
+                <svg style="width:10px;height:10px;stroke:#0a0a0a;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                {% endif %}
+              </div>
+              {% endif %}
+              <div class="m-body">
+                <div class="m-title">{{ milestone.title }}</div>
+                {% if milestone.description %}
+                <div class="m-desc">{{ milestone.description }}</div>
+                {% endif %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+            <p class="empty-ms">No milestones yet. Add one below to track your progress.</p>
+          {% endif %}
+
+          {% if project.user_id == current_user.id %}
+          <div class="add-milestone-form">
+            <form method="POST" action="{{ url_for('add_milestone', project_id=project.id) }}">
+              <input type="text" name="title" placeholder="Milestone title e.g. Set up database" required maxlength="200">
+              <textarea name="description" rows="2" placeholder="Optional description..." maxlength="500"></textarea>
+              <button type="submit">+ Add milestone</button>
+            </form>
+          </div>
+          {% endif %}
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- ── CELEBRATION POPUP ── -->
+{% if just_completed %}
+<div class="confetti-container" id="confettiContainer"></div>
+<div class="popup-overlay" id="popupOverlay">
+  <div class="popup-card">
+    <span class="popup-emoji">🏆</span>
+    <div class="popup-title">You <em>shipped it!</em></div>
+    <div class="popup-sub">
+      Every milestone is done. Your project has been marked as
+      <strong style="color:#a8ff36">Completed</strong> and added to the
+      Celebration Wall for the whole community to see.
+    </div>
+    <div class="popup-proj-name">
+      <div class="popup-proj-label">Completed project</div>
+      <div class="popup-proj-title">{{ project.title }}</div>
+    </div>
+    <div class="popup-actions">
+      <a href="{{ url_for('celebration') }}" class="popup-btn-main">View Celebration Wall 🎉</a>
+      <button class="popup-btn-ghost" onclick="closePopup()">Stay here</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── CONFETTI ── */
+const colours = ['#a8ff36','#c4ff5e','#ffffff','#ffaa5a','#7a9aff','#ff6b6b'];
+const container = document.getElementById('confettiContainer');
+
+for (let i = 0; i < 80; i++) {
+  const piece = document.createElement('div');
+  piece.className = 'confetti-piece';
+  const size = Math.random() * 10 + 5;
+  piece.style.cssText = `
+    left: ${Math.random() * 100}vw;
+    width: ${size}px;
+    height: ${size}px;
+    background: ${colours[Math.floor(Math.random() * colours.length)]};
+    border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+    animation-duration: ${Math.random() * 3 + 2}s;
+    animation-delay: ${Math.random() * 1.5}s;
+    opacity: 1;
+  `;
+  container.appendChild(piece);
+}
+
+/* Remove confetti after 6 seconds */
+setTimeout(() => {
+  if (container) container.remove();
+}, 6000);
+
+function closePopup() {
+  document.getElementById('popupOverlay').remove();
+  if (document.getElementById('confettiContainer')) {
+    document.getElementById('confettiContainer').remove();
+  }
+}
+
+/* Close on overlay background click */
+document.getElementById('popupOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closePopup();
+});
+</script>
+{% endif %}
+
+{% endblock %}

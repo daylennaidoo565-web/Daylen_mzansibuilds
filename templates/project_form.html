@@ -1,0 +1,236 @@
+{% extends 'base.html' %}
+{% block title %}{% if action == 'edit' %}Edit Project{% else %}New Project{% endif %} — MzansiBuilds{% endblock %}
+
+{% block content %}
+<style>
+.dash-layout{display:flex;min-height:calc(100vh - 60px);background:#0a0a0a}
+
+/* SIDEBAR */
+.sidebar{width:240px;flex-shrink:0;background:#0d0d0d;border-right:1px solid #1f1f1f;display:flex;flex-direction:column;padding:24px 0;position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto}
+.sidebar-user{padding:0 20px 24px;border-bottom:1px solid #1f1f1f;margin-bottom:16px}
+.sidebar-avatar{width:44px;height:44px;border-radius:50%;background:#0f2a0f;border:2px solid #a8ff36;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#a8ff36;margin-bottom:10px;font-family:'Space Grotesk',sans-serif}
+.sidebar-name{font-size:14px;font-weight:700;color:#f4f4f5;font-family:'Space Grotesk',sans-serif;letter-spacing:-0.01em}
+.sidebar-email{font-size:11px;color:#555;margin-top:2px;font-family:'Space Grotesk',sans-serif}
+.sidebar-section{padding:0 12px;margin-bottom:8px}
+.sidebar-label{font-size:10px;font-weight:600;color:#444;text-transform:uppercase;letter-spacing:.1em;padding:0 8px;margin-bottom:6px;font-family:'Space Grotesk',sans-serif}
+.sidebar-link{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;font-size:13px;font-weight:500;color:#888;text-decoration:none;transition:background .2s,color .2s;font-family:'Space Grotesk',sans-serif}
+.sidebar-link:hover{background:#161616;color:#f4f4f5}
+.sidebar-link.active{background:#0f2a0f;color:#a8ff36}
+.sidebar-link svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.sidebar-divider{height:1px;background:#1a1a1a;margin:12px 20px}
+.sidebar-new-btn{margin:12px 12px 0;padding:10px 14px;background:#a8ff36;color:#0a0a0a;border-radius:8px;font-size:13px;font-weight:700;text-align:center;text-decoration:none;display:block;font-family:'Space Grotesk',sans-serif;transition:opacity .2s}
+.sidebar-new-btn:hover{opacity:.85}
+
+/* MAIN */
+.dash-main{flex:1;padding:40px;overflow-x:hidden;max-width:720px}
+.page-header{margin-bottom:32px}
+.page-title{font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:700;color:#f4f4f5;letter-spacing:-0.03em}
+.page-sub{font-size:14px;color:#666;margin-top:4px;font-family:'Space Grotesk',sans-serif}
+
+/* FORM CARD */
+.form-card{background:#0d0d0d;border:1px solid #1f1f1f;border-radius:16px;padding:32px}
+
+.field{margin-bottom:24px}
+.field label{display:block;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;color:#bbb;margin-bottom:8px;letter-spacing:0.01em}
+.field label .req{color:#a8ff36;margin-left:2px}
+.field input,.field textarea,.field select{
+  width:100%;background:#111;border:1px solid #2a2a2a;border-radius:8px;
+  padding:12px 14px;font-family:'Space Grotesk',sans-serif;font-size:14px;
+  color:#f4f4f5;outline:none;transition:border-color .2s,box-shadow .2s;
+  resize:vertical;
+}
+.field input::placeholder,.field textarea::placeholder{color:#444}
+.field input:focus,.field textarea:focus,.field select:focus{
+  border-color:#a8ff36;box-shadow:0 0 0 3px rgba(168,255,54,0.08);
+}
+.field select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;cursor:pointer}
+.field select option{background:#111;color:#f4f4f5}
+.field-hint{font-size:11px;color:#555;margin-top:6px;font-family:'Space Grotesk',sans-serif;line-height:1.5}
+
+/* STAGE OPTIONS — visual selector */
+.stage-options{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:4px}
+.stage-opt{position:relative}
+.stage-opt input[type=radio]{position:absolute;opacity:0;width:0;height:0}
+.stage-opt label{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#111;border:1px solid #2a2a2a;border-radius:8px;cursor:pointer;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:500;color:#888;transition:all .2s}
+.stage-opt label:hover{border-color:#444;color:#f4f4f5}
+.stage-opt input[type=radio]:checked + label{border-color:#a8ff36;color:#a8ff36;background:#0f2a0f}
+.stage-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot-planning{background:#7a9aff}
+.dot-progress{background:#a8ff36}
+.dot-help{background:#ffaa5a}
+.dot-done{background:#a8ff36}
+
+.form-actions{display:flex;align-items:center;gap:12px;margin-top:32px;padding-top:24px;border-top:1px solid #1f1f1f}
+.btn-primary{padding:12px 28px;background:#a8ff36;color:#0a0a0a;border:none;border-radius:100px;font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .2s,transform .15s}
+.btn-primary:hover{opacity:.88}
+.btn-primary:active{transform:scale(0.98)}
+.btn-ghost{padding:12px 24px;background:transparent;color:#888;border:1px solid #333;border-radius:100px;font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:500;text-decoration:none;transition:color .2s,border-color .2s}
+.btn-ghost:hover{color:#f4f4f5;border-color:#555}
+
+@media(max-width:640px){
+  .sidebar{display:none}
+  .dash-main{padding:20px 16px;max-width:100%}
+  .stage-options{grid-template-columns:1fr}
+}
+</style>
+
+<div class="dash-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar">{{ current_user.username[0].upper() }}</div>
+      <div class="sidebar-name">{{ current_user.username }}</div>
+      <div class="sidebar-email">{{ current_user.email }}</div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Main</div>
+      <a href="{{ url_for('dashboard') }}" class="sidebar-link">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </a>
+      <a href="{{ url_for('feed') }}" class="sidebar-link">
+        <svg viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+        Live Feed
+      </a>
+      <a href="{{ url_for('celebration') }}" class="sidebar-link">
+        <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        Celebration Wall
+      </a>
+    </div>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">My Projects</div>
+      {% set user_projects = current_user.projects %}
+      {% if user_projects %}
+        {% for p in user_projects %}
+        <a href="{{ url_for('project_detail', project_id=p.id) }}" class="sidebar-link">
+          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          {{ p.title[:22] }}{% if p.title|length > 22 %}…{% endif %}
+        </a>
+        {% endfor %}
+      {% else %}
+        <p style="font-size:12px;color:#444;padding:4px 12px;font-family:'Space Grotesk',sans-serif">No projects yet</p>
+      {% endif %}
+    </div>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section">
+      <a href="{{ url_for('logout') }}" class="sidebar-link" style="color:#666">
+        <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Logout
+      </a>
+    </div>
+    <a href="{{ url_for('new_project') }}" class="sidebar-new-btn active">+ New Project</a>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="dash-main">
+    <div class="page-header">
+      <div class="page-title">
+        {% if action == 'edit' %}Edit Project{% else %}Add a New Project{% endif %}
+      </div>
+      <div class="page-sub">
+        {% if action == 'edit' %}Update your project details and stage.
+        {% else %}Share what you're building with the MzansiBuilds community.{% endif %}
+      </div>
+    </div>
+
+    <div class="form-card">
+      <form method="POST"
+            action="{% if action == 'edit' %}{{ url_for('edit_project', project_id=project.id) }}{% else %}{{ url_for('new_project') }}{% endif %}"
+            novalidate>
+
+        <!-- TITLE -->
+        <div class="field">
+          <label for="title">Project title <span class="req">*</span></label>
+          <input
+            type="text"
+            id="title"
+            name="title"
+            placeholder="e.g. SA Job Board, Budget Tracker CLI"
+            required
+            maxlength="120"
+            value="{{ project.title if project else '' }}"
+          >
+          <div class="field-hint">Keep it short and descriptive. Max 120 characters.</div>
+        </div>
+
+        <!-- DESCRIPTION -->
+        <div class="field">
+          <label for="description">What are you building?</label>
+          <textarea
+            id="description"
+            name="description"
+            rows="4"
+            placeholder="Describe your project — what it does, who it's for, what tech you're using..."
+            maxlength="1000"
+          >{{ project.description if project else '' }}</textarea>
+          <div class="field-hint">Max 1000 characters. This shows on the live feed.</div>
+        </div>
+
+        <!-- STAGE -->
+        <div class="field">
+          <label>Current stage <span class="req">*</span></label>
+          <div class="stage-options">
+            <div class="stage-opt">
+              <input type="radio" name="stage" id="s1" value="Planning"
+                {% if not project or project.stage == 'Planning' %}checked{% endif %}>
+              <label for="s1">
+                <span class="stage-dot dot-planning"></span>
+                Planning
+              </label>
+            </div>
+            <div class="stage-opt">
+              <input type="radio" name="stage" id="s2" value="In Progress"
+                {% if project and project.stage == 'In Progress' %}checked{% endif %}>
+              <label for="s2">
+                <span class="stage-dot dot-progress"></span>
+                In Progress
+              </label>
+            </div>
+            <div class="stage-opt">
+              <input type="radio" name="stage" id="s3" value="Needs Help"
+                {% if project and project.stage == 'Needs Help' %}checked{% endif %}>
+              <label for="s3">
+                <span class="stage-dot dot-help"></span>
+                Needs Help
+              </label>
+            </div>
+            <div class="stage-opt">
+              <input type="radio" name="stage" id="s4" value="Completed"
+                {% if project and project.stage == 'Completed' %}checked{% endif %}>
+              <label for="s4">
+                <span class="stage-dot dot-done"></span>
+                Completed
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUPPORT NEEDED -->
+        <div class="field">
+          <label for="support_needed">Support needed</label>
+          <textarea
+            id="support_needed"
+            name="support_needed"
+            rows="3"
+            placeholder="What kind of help or collaboration are you looking for? e.g. frontend dev, UI feedback, testing..."
+            maxlength="500"
+          >{{ project.support_needed if project else '' }}</textarea>
+          <div class="field-hint">Optional. This helps other developers know how they can help.</div>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="form-actions">
+          <button type="submit" class="btn-primary">
+            {% if action == 'edit' %}Save changes{% else %}Create project{% endif %}
+          </button>
+          <a href="{{ url_for('dashboard') }}" class="btn-ghost">Cancel</a>
+        </div>
+
+      </form>
+    </div>
+  </main>
+
+</div>
+{% endblock %}
