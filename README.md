@@ -20,6 +20,9 @@ A platform where South African developers build in public, track their progress,
 
 ![MzansiBuilds System Architecture](docs/architecture.png)
 
+## Use case diagram
+![Use Case Diagram](docs/UseCase.png)
+
 ---
 
 ## Tech Stack
