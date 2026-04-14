@@ -1,0 +1,867 @@
+{% extends 'base.html' %}
+<!-- Inherits the navbar, footer and base styles from base.html -->
+
+{% block title %}Celebration Wall — MzansiBuilds{% endblock %}
+<!-- Sets the browser tab title for the celebration wall page -->
+
+{% block head %}
+<style>
+
+  /* Dark background for the entire page */
+  .wall-page {
+    background: #0a0a0a;
+    min-height: calc(100vh - 60px);
+  }
+
+  /* ── HERO SECTION ──────────────────────────────────────────── */
+
+  /* Top hero area with a subtle green radial glow behind the heading */
+  .wall-hero {
+    position: relative;
+    overflow: hidden;
+    padding: 56px 32px 44px;
+    border-bottom: 1px solid #1a1a1a;
+    background: radial-gradient(ellipse 70% 90% at 50% -10%, rgba(168,255,54,0.07) 0%, transparent 65%);
+  }
+
+  /* Centres the hero content with a max width */
+  .wall-hero-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  /* Trophy emoji that floats up and down continuously */
+  .wall-trophy {
+    font-size: 48px;
+    margin-bottom: 16px;
+    display: inline-block;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  /* Floating animation keyframes — moves up 10px and back down */
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-10px); }
+  }
+
+  /* Small green uppercase label above the main heading */
+  .wall-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .14em;
+    color: #a8ff36;
+    margin-bottom: 12px;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  /* Main hero heading */
+  .wall-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(30px, 5vw, 52px);
+    font-weight: 700;
+    color: #f4f4f5;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    margin-bottom: 12px;
+  }
+
+  /* Green accent on the second line of the heading */
+  .wall-title em {
+    color: #a8ff36;
+    font-style: normal;
+  }
+
+  /* Subtitle below the heading */
+  .wall-subtitle {
+    font-size: 15px;
+    color: #666;
+    font-family: 'Space Grotesk', sans-serif;
+    max-width: 460px;
+    margin: 0 auto 32px;
+    line-height: 1.7;
+  }
+
+  /* Row of stats — projects shipped, builders, milestones done */
+  .wall-stats {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+  }
+
+  /* Large number in each stat */
+  .wall-stat-num {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: #f4f4f5;
+    letter-spacing: -0.03em;
+  }
+
+  /* Green + sign after each stat number */
+  .wall-stat-num em {
+    color: #a8ff36;
+    font-style: normal;
+  }
+
+  /* Small label below each stat number */
+  .wall-stat-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    font-family: 'Space Grotesk', sans-serif;
+    margin-top: 2px;
+  }
+
+  /* Thin vertical line between each stat */
+  .wall-stat-divider {
+    width: 1px;
+    height: 40px;
+    background: #1f1f1f;
+  }
+
+  /* ── PAGE BODY ─────────────────────────────────────────────── */
+
+  /* Main content area below the hero */
+  .wall-body {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 32px;
+  }
+
+  /* Section label with a line extending to the right */
+  .wall-section-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    color: #444;
+    font-family: 'Space Grotesk', sans-serif;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* The horizontal line after the section label text */
+  .wall-section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #1a1a1a;
+  }
+
+  /* ── FEATURED CARD ─────────────────────────────────────────── */
+
+  /* The most recently completed project — shown larger at the top */
+  .featured-card {
+    background: #0d0d0d;
+    border: 1px solid #2a4a1a;
+    border-radius: 20px;
+    padding: 32px;
+    margin-bottom: 16px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 24px;
+    align-items: center;
+    text-decoration: none;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity .5s ease, transform .5s ease, box-shadow .3s, border-color .3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Decorative green glow in the top right corner of the featured card */
+  .featured-card::before {
+    content: '';
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 220px;
+    height: 220px;
+    background: radial-gradient(circle, rgba(168,255,54,0.06), transparent 70%);
+    pointer-events: none;
+  }
+
+  /* JavaScript adds .visible when the card scrolls into view */
+  .featured-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Green glow and slight lift on hover */
+  .featured-card:hover {
+    box-shadow: 0 0 0 1px #a8ff3625, 0 12px 40px #a8ff3612;
+    border-color: #3a6a2a;
+    transform: translateY(-2px);
+  }
+
+  /* Green "Latest ship" badge in the top left of the featured card */
+  .featured-badge {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #a8ff36;
+    color: #0a0a0a;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 100px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+  }
+
+  /* Star icon inside the badge */
+  .featured-badge svg {
+    width: 11px;
+    height: 11px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* Push the content down to make room for the badge */
+  .featured-content {
+    padding-top: 32px;
+  }
+
+  /* Project title in the featured card */
+  .featured-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(18px, 2.5vw, 26px);
+    font-weight: 700;
+    color: #f4f4f5;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+
+  /* Project description in the featured card */
+  .featured-desc {
+    font-size: 14px;
+    color: #888;
+    line-height: 1.7;
+    font-family: 'Space Grotesk', sans-serif;
+    max-width: 500px;
+  }
+
+  /* Row showing the author avatar, username and date */
+  .featured-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+
+  /* Author avatar and username grouped together */
+  .featured-author {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Circle avatar showing the first letter of the username */
+  .featured-av {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #0f2a0f;
+    border: 1.5px solid #a8ff36;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: #a8ff36;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  /* Username in green */
+  .featured-username {
+    font-size: 13px;
+    font-weight: 600;
+    color: #a8ff36;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  /* Date the project was completed */
+  .featured-date {
+    font-size: 12px;
+    color: #444;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  /* Right side of the featured card — shows milestone count */
+  .featured-right {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  /* Large milestone number */
+  .feat-ms-num {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 40px;
+    font-weight: 700;
+    color: #a8ff36;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+
+  /* Label below the milestone number */
+  .feat-ms-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    font-family: 'Space Grotesk', sans-serif;
+    text-align: center;
+  }
+
+  /* ── WALL GRID ─────────────────────────────────────────────── */
+
+  /* Three column grid of completed project cards */
+  .wall-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+
+  /* Individual completed project card */
+  .wall-card {
+    background: #0d0d0d;
+    border: 1px solid #1a1a1a;
+    border-radius: 16px;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    text-decoration: none;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity .5s ease, transform .5s ease, border-color .3s, box-shadow .3s;
+  }
+
+  /* JavaScript adds .visible when the card scrolls into view */
+  .wall-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Green glow and slight lift on hover */
+  .wall-card:hover {
+    border-color: #2a4a1a;
+    box-shadow: 0 0 0 1px #a8ff3618, 0 8px 28px #a8ff3610;
+    transform: translateY(-3px);
+  }
+
+  /* Top row of each card — avatar, username and shipped badge */
+  .wall-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  /* Avatar and username grouped together */
+  .wall-card-author {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  /* Circle avatar showing the first letter of the username */
+  .wc-av {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #0f1f0f;
+    border: 1.5px solid #1f3a1f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: #a8ff36;
+    flex-shrink: 0;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  /* Developer username */
+  .wc-username {
+    font-size: 12px;
+    font-weight: 600;
+    color: #888;
+    font-family: 'Space Grotesk', sans-serif;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Green "Shipped" badge on each wall card */
+  .shipped-badge {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 100px;
+    background: #1a2a0f;
+    color: #a8ff36;
+    border: 1px solid #2a4a1f;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  /* Project title on each wall card */
+  .wc-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: #f0f0f0;
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+  }
+
+  /* Short project description */
+  .wc-desc {
+    font-size: 12px;
+    color: #666;
+    line-height: 1.65;
+    font-family: 'Space Grotesk', sans-serif;
+    flex: 1;
+  }
+
+  /* Footer of each card — milestone count, comment count and date */
+  .wc-foot {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #141414;
+    margin-top: auto;
+  }
+
+  /* Each stat item in the card footer */
+  .wc-foot-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: #444;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  /* Icon in each footer item */
+  .wc-foot-item svg {
+    width: 12px;
+    height: 12px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* Date pushed to the far right of the footer */
+  .wc-date {
+    margin-left: auto;
+    font-size: 11px;
+    color: #333;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  /* ── CALL TO ACTION ────────────────────────────────────────── */
+
+  /* Banner at the bottom encouraging users to complete their own projects */
+  .wall-cta {
+    margin-top: 48px;
+    background: #0d0d0d;
+    border: 1px solid #1f2d1f;
+    border-radius: 16px;
+    padding: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Decorative green glow in the top right corner of the CTA */
+  .wall-cta::before {
+    content: '';
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(168,255,54,0.05), transparent 70%);
+    pointer-events: none;
+  }
+
+  /* CTA heading */
+  .wall-cta-left h3 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #f4f4f5;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+  }
+
+  /* CTA subtext */
+  .wall-cta-left p {
+    font-size: 13px;
+    color: #666;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  /* Green button on the CTA */
+  .wall-cta-btn {
+    padding: 11px 24px;
+    background: #a8ff36;
+    color: #0a0a0a;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    font-family: 'Space Grotesk', sans-serif;
+    white-space: nowrap;
+    transition: opacity .2s;
+  }
+
+  .wall-cta-btn:hover {
+    opacity: .85;
+  }
+
+  /* ── EMPTY STATE ───────────────────────────────────────────── */
+
+  /* Shown when no projects have been completed yet */
+  .wall-empty {
+    text-align: center;
+    padding: 80px 24px;
+  }
+
+  .wall-empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+  }
+
+  .wall-empty h3 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: #f4f4f5;
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+  }
+
+  .wall-empty p {
+    font-size: 14px;
+    color: #555;
+    font-family: 'Space Grotesk', sans-serif;
+    margin-bottom: 24px;
+    line-height: 1.7;
+  }
+
+  /* CTA button in the empty state */
+  .wall-empty a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 11px 24px;
+    background: #a8ff36;
+    color: #0a0a0a;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  /* ── RESPONSIVE ────────────────────────────────────────────── */
+
+  /* Tablet — switch to 2 column grid and collapse featured card to single column */
+  @media (max-width: 900px) {
+    .wall-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .featured-card {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Mobile — single column, reduce padding, hide stat dividers */
+  @media (max-width: 600px) {
+    .wall-hero {
+      padding: 36px 16px 32px;
+    }
+    .wall-body {
+      padding: 24px 16px;
+    }
+    .wall-grid {
+      grid-template-columns: 1fr;
+    }
+    .wall-stats {
+      gap: 20px;
+    }
+    .wall-stat-divider {
+      display: none;
+    }
+  }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wall-page">
+
+  <!-- ── HERO ───────────────────────────────────────────────────── -->
+  <div class="wall-hero">
+    <div class="wall-hero-inner">
+
+      <!-- Floating trophy emoji -->
+      <div class="wall-trophy">🏆</div>
+
+      <!-- Section label and heading -->
+      <div class="wall-eyebrow">Celebration Wall</div>
+      <div class="wall-title">
+        Developers who<br>
+        <em>actually shipped</em>
+      </div>
+
+      <!-- Subtitle -->
+      <div class="wall-subtitle">
+        These builders started something, stayed consistent, and finished.
+        Every project here is proof that SA developers deliver.
+      </div>
+
+      <!-- Stats row — pulled from the database via Jinja2 -->
+      <div class="wall-stats">
+
+        <!-- Total completed projects -->
+        <div>
+          <div class="wall-stat-num">{{ projects|length }}<em>+</em></div>
+          <div class="wall-stat-label">Projects shipped</div>
+        </div>
+
+        <div class="wall-stat-divider"></div>
+
+        <!-- Unique builders — counts distinct authors across all projects -->
+        <div>
+          <div class="wall-stat-num">
+            {{ projects|map(attribute='author')|map(attribute='username')|unique|list|length }}<em>+</em>
+          </div>
+          <div class="wall-stat-label">Builders</div>
+        </div>
+
+        <div class="wall-stat-divider"></div>
+
+        <!-- Total milestones completed across all shipped projects -->
+        <div>
+          <div class="wall-stat-num">
+            {{ projects|sum(attribute='milestone_progress.1') }}<em>+</em>
+          </div>
+          <div class="wall-stat-label">Milestones done</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ── WALL BODY ──────────────────────────────────────────────── -->
+  <div class="wall-body">
+
+    {% if projects %}
+
+      <!-- ── FEATURED CARD — most recently completed project ────── -->
+      {% set featured = projects[0] %}
+
+      <div class="wall-section-label">Latest ship</div>
+
+      <!-- Link to the project detail page — requires login -->
+      <a href="{% if current_user.is_authenticated %}{{ url_for('project_detail', project_id=featured.id) }}{% else %}{{ url_for('login') }}{% endif %}"
+         class="featured-card">
+
+        <!-- Green badge in the top left corner -->
+        <div class="featured-badge">
+          <svg viewBox="0 0 24 24">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+          Latest ship
+        </div>
+
+        <!-- Left side — title, description and author -->
+        <div class="featured-content">
+
+          <div class="featured-title">{{ featured.title }}</div>
+
+          <!-- Only show description if one exists — truncate at 180 characters -->
+          {% if featured.description %}
+          <div class="featured-desc">
+            {{ featured.description[:180] }}{% if featured.description|length > 180 %}…{% endif %}
+          </div>
+          {% endif %}
+
+          <!-- Author avatar, username and completion date -->
+          <div class="featured-meta">
+            <div class="featured-author">
+              <div class="featured-av">{{ featured.author.username[0].upper() }}</div>
+              <span class="featured-username">@{{ featured.author.username }}</span>
+            </div>
+            <span class="featured-date">{{ featured.created_at.strftime('%d %b %Y') }}</span>
+          </div>
+
+        </div>
+
+        <!-- Right side — total milestone count -->
+        <div class="featured-right">
+          <div class="feat-ms-num">{{ featured.milestone_progress[1] }}</div>
+          <div class="feat-ms-label">Milestones<br>completed</div>
+        </div>
+
+      </a>
+
+      <!-- ── ALL SHIPPED PROJECTS GRID ──────────────────────────── -->
+      {% if projects|length > 1 %}
+
+        <div class="wall-section-label" style="margin-top: 32px;">All shipped projects</div>
+
+        <div class="wall-grid">
+          {% for project in projects %}
+
+          <!-- Each card links to the project detail page -->
+          <!-- transition-delay staggers the card animations as they scroll into view -->
+          <a href="{% if current_user.is_authenticated %}{{ url_for('project_detail', project_id=project.id) }}{% else %}{{ url_for('login') }}{% endif %}"
+             class="wall-card"
+             style="transition-delay: {{ loop.index0 * 70 }}ms">
+
+            <!-- Top row — avatar, username and shipped badge -->
+            <div class="wall-card-top">
+              <div class="wall-card-author">
+                <div class="wc-av">{{ project.author.username[0].upper() }}</div>
+                <span class="wc-username">@{{ project.author.username }}</span>
+              </div>
+              <span class="shipped-badge">Shipped ✓</span>
+            </div>
+
+            <!-- Project title -->
+            <div class="wc-title">{{ project.title }}</div>
+
+            <!-- Short description — truncated at 100 characters -->
+            {% if project.description %}
+            <div class="wc-desc">
+              {{ project.description[:100] }}{% if project.description|length > 100 %}…{% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Card footer — milestone count, comment count and date -->
+            <div class="wc-foot">
+
+              <!-- Milestone count with checkmark icon -->
+              <div class="wc-foot-item">
+                <svg viewBox="0 0 24 24">
+                  <polyline points="9 11 12 14 22 4"/>
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                </svg>
+                {{ project.milestone_progress[1] }} milestones
+              </div>
+
+              <!-- Comment count with speech bubble icon -->
+              <div class="wc-foot-item">
+                <svg viewBox="0 0 24 24">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+                {{ project.comments|length }}
+              </div>
+
+              <!-- Date pushed to the right -->
+              <span class="wc-date">{{ project.created_at.strftime('%d %b %Y') }}</span>
+
+            </div>
+          </a>
+
+          {% endfor %}
+        </div>
+
+      {% endif %}
+
+      <!-- ── CALL TO ACTION ──────────────────────────────────────── -->
+      <!-- Encourages other developers to complete their own projects -->
+      <div class="wall-cta">
+        <div class="wall-cta-left">
+          <h3>Your project could be up here.</h3>
+          <p>Complete all your milestones and get featured on the Celebration Wall.</p>
+        </div>
+        <!-- Show dashboard link if logged in, otherwise show register link -->
+        {% if current_user.is_authenticated %}
+          <a href="{{ url_for('dashboard') }}" class="wall-cta-btn">Go to my projects →</a>
+        {% else %}
+          <a href="{{ url_for('register') }}" class="wall-cta-btn">Start building →</a>
+        {% endif %}
+      </div>
+
+    {% else %}
+
+      <!-- ── EMPTY STATE — shown when no projects are completed yet ── -->
+      <div class="wall-empty">
+        <div class="wall-empty-icon">🚀</div>
+        <h3>No completed projects yet</h3>
+        <p>
+          The wall is waiting for its first entry.
+          Complete all your milestones and be the first builder featured here.
+        </p>
+        <!-- Different link depending on whether the user is logged in -->
+        {% if current_user.is_authenticated %}
+          <a href="{{ url_for('dashboard') }}">Go to my projects</a>
+        {% else %}
+          <a href="{{ url_for('register') }}">Join and start building</a>
+        {% endif %}
+      </div>
+
+    {% endif %}
+
+  </div>
+</div>
+
+<!-- ── JAVASCRIPT ────────────────────────────────────────────────── -->
+<script>
+
+  // Use IntersectionObserver to fade cards in as they scroll into view
+  // Once a card becomes visible it gets the .visible class and stops being watched
+  const cards = document.querySelectorAll('.wall-card, .featured-card');
+
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        obs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.08 });
+
+  cards.forEach(c => obs.observe(c));
+
+</script>
+
+{% endblock %}

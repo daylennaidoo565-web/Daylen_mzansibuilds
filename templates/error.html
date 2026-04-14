@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}{{ code }} — MzansiBuilds{% endblock %}
+{% block content %}
+<div style="min-height:60vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 24px">
+  <div style="font-family:'Space Grotesk',sans-serif;font-size:80px;font-weight:700;color:#a8ff36;letter-spacing:-0.04em;line-height:1">{{ code }}</div>
+  <div style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:#f4f4f5;margin:12px 0 8px;letter-spacing:-0.02em">{{ message }}</div>
+  <div style="font-size:14px;color:#666;margin-bottom:28px;font-family:'Space Grotesk',sans-serif">Let's get you back on track.</div>
+  <a href="{{ url_for('index') }}" style="display:inline-flex;align-items:center;gap:6px;padding:12px 24px;background:#a8ff36;color:#0a0a0a;border-radius:100px;font-size:14px;font-weight:700;text-decoration:none;font-family:'Space Grotesk',sans-serif">
+    Back to home
+  </a>
+</div>
+{% endblock %}
