@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- The head section contains setup information - not visible on the page itself -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Makes the page responsive - without this it would look zoomed out on mobile -->
+  <title>{% block title %}MzansiBuilds{% endblock %}</title>
+  <!-- Page title shown in the browser tab - each page can override this with its own title -->
+
+  <!-- Google Fonts - loads Space Grotesk font family for use across the whole site -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome - icon library used for things like comment icons, milestone checkmarks -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+  <style>
+    /* Reset — removes default browser spacing so everything looks consistent */
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+    /* Smooth font rendering on Mac and Windows */
+    html { font-size:16px; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+
+    /* Global body styles - dark background, light text, Space Grotesk font throughout */
+    body {
+      background:#0a0a0a;
+      color:#f4f4f5;
+      font-family:'Space Grotesk',sans-serif;
+      font-weight:400;
+      line-height:1.6;
+      min-height:100vh;
+    }
+
+    /* All headings use Space Grotesk bold with tight letter spacing */
+    h1,h2,h3,h4,h5,h6 {
+      font-family:'Space Grotesk',sans-serif;
+      font-weight:700;
+      line-height:1.1;
+      letter-spacing:-0.02em;
+    }
+
+    /* Remove underlines from all links by default */
+    a { 
+      text-decoration:none; 
+      color:inherit; 
+    }
+
+    /* Images never overflow their container */
+    img { 
+      max-width:100%; 
+      display:block; 
+    }
+
+    /* Buttons inherit the site font and have no default browser styling */
+    button {
+       font-family:'Space Grotesk',sans-serif; 
+       border:none; 
+       background:none; 
+    }
+
+    /* Flash message container - fixed position just below the navbar */
+    .flash-messages {
+      position:fixed; top:70px; left:50%; transform:translateX(-50%);
+      z-index:9999; display:flex; flex-direction:column; gap:8px;
+      width:100%; max-width:480px; padding:0 16px;
+    }
+
+    /* Success flash - green styling for positive actions like registration */
+    .flash-messages .success {
+      background:rgba(15,42,15,0.95); 
+      border:1px solid #1f4a1f; 
+      color:#a8ff36; 
+      padding:12px 16px; 
+      border-radius:8px; 
+      font-size:14px; 
+      font-weight:500; 
+      backdrop-filter:blur(8px); 
+    }
+
+    /* Danger flash - red styling for errors like wrong password */
+    .flash-messages .danger  { 
+      background:rgba(42,15,15,0.95);  
+      border:1px solid #4a1f1f; 
+      color:#ff6b6b; 
+      padding:12px 16px;
+      border-radius:8px; 
+      font-size:14px; 
+      font-weight:500;
+      backdrop-filter:blur(8px); 
+    }
+
+    /* Warning flash - amber styling for caution messages */
+    .flash-messages .warning { 
+      background:rgba(42,30,5,0.95);   
+      border:1px solid #4a3a0a; 
+      color:#ffaa5a; 
+      padding:12px 16px; 
+      border-radius:8px; 
+      font-size:14px; 
+      font-weight:500; 
+      backdrop-filter:blur(8px); 
+    }
+
+    /* Info flash - blue styling for general information messages */
+    .flash-messages .info    { 
+      background:rgba(10,15,42,0.95);  
+      border:1px solid #1f2a4a; 
+      color:#7a9aff; 
+      padding:12px 16px; 
+      border-radius:8px; 
+      font-size:14px; 
+      font-weight:500; 
+      backdrop-filter:blur(8px); 
+    }
+  </style>
+
+  <!-- Each page can add its own styles or scripts here without touching base.html -->
+  {% block head %}{% endblock %}
+
+</head>
+<body>
+
+  <!-- NAVBAR — sticky so it stays at the top as the user scrolls -->
+  <nav style="background:rgba(10,10,10,0.92);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid #1f1f1f;
+  padding:0 32px;
+  height:60px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  position:sticky;
+  top:0;z-index:500">
+
+    <!-- Logo - clicking it takes you back to the home page -->
+    <a href="{{ url_for('index') }}" style="font-family:'Space Grotesk',sans-serif;
+    font-size:20px;
+    font-weight:700;
+    letter-spacing:-0.03em;
+    text-decoration:none">
+      <span style="color:#a8ff36">Mzansi</span><span style="color:#fff">Builds</span>
+    </a>
+
+    <!-- Navigation links - changes depending on whether user is logged in or not -->
+    <div style="display:flex;
+         align-items:center;
+         gap:24px;
+         font-size:14px;
+         font-weight:500;
+         font-family:'Space Grotesk',sans-serif">
+
+      <!-- These two links are always visible to everyone -->
+      <a href="{{ url_for('feed') }}"        style="color:#aaa;text-decoration:none">Feed</a>
+      <a href="{{ url_for('celebration') }}" style="color:#aaa;text-decoration:none">Wall</a>
+
+      {% if current_user.is_authenticated %}
+        <!-- Logged in - show Dashboard link and Logout button -->
+        <a href="{{ url_for('dashboard') }}" style="color:#aaa;text-decoration:none">Dashboard</a>
+        <a href="{{ url_for('logout') }}"    style="background:#a8ff36;
+        color:#0a0a0a;
+        font-family:'Space Grotesk',sans-serif;
+        font-size:13px;
+        font-weight:700;
+        padding:8px 18px;
+        border-radius:6px;
+        text-decoration:none">Logout</a>
+      {% else %}
+        <!-- Not logged in - show Login link and Join free button -->
+        <a href="{{ url_for('login') }}"    style="color:#aaa;text-decoration:none">Login</a>
+        <a href="{{ url_for('register') }}" style="background:#a8ff36;
+        color:#0a0a0a;
+        font-family:'Space Grotesk',sans-serif;
+        font-size:13px;
+        font-weight:700;
+        padding:8px 18px;
+        border-radius:6px;
+        text-decoration:none">Join free</a>
+      {% endif %}
+    </div>
+  </nav>
+
+  <!-- FLASH MESSAGES - one-time notifications shown after actions like login or register -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-messages">
+        {% for category, message in messages %}
+          <div class="{{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- MAIN CONTENT - each page fills this block with its own content -->
+  <main>{% block content %}{% endblock %}</main>
+
+  <!-- FOOTER - shown at the bottom of every page -->
+  <footer style="border-top:1px solid #1f1f1f;
+  padding:20px 32px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  font-size:12px;
+  color:#555;
+  flex-wrap:wrap;
+  gap:8px;
+  background:#0a0a0a;
+  font-family:'Space Grotesk',sans-serif">
+
+    <!-- Footer logo -->
+    <div style="font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:16px;
+    letter-spacing:-0.02em">
+      <span style="color:#a8ff36">Mzansi</span><span style="color:#fff">Builds</span>
+    </div>
+
+    <!-- Copyright notice -->
+    <span>© 2026 — Derivco Graduate Programme</span>
+  </footer>
+
+</body>
+</html>
