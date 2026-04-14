@@ -4,6 +4,8 @@
 
 A platform where South African developers build in public, track their progress, and collaborate in the open. Built for the **Derivco Code Skills Challenge 2026**.
 
+The website has been publicly deployed using railway, You can access it at https://web-production-16fc9.up.railway.app. Please note that you can also install and run the version directly on your computer. The application is meant to be displayed on larger screen sizes but small screen sizes like phones have also been taken into account. The public deployment of the site was to show continous development skills. 
+
 ---
 
 ## What it does
