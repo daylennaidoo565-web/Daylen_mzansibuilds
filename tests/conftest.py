@@ -17,14 +17,15 @@ def app():
     """
     Configure Flask app for testing.
     Uses in-memory SQLite — isolated from the real database.
-    Captcha is bypassed automatically because DEBUG_MODE=True in test env.
+    FLASK_DEBUG is set to 1 so hCaptcha is bypassed during tests.
+    Without this, login would fail in CI because there is no real captcha token.
     """
     flask_app.config.update({
         'TESTING': True,
         'SQLALCHEMY_DATABASE_URI': 'sqlite:///:memory:',
         'WTF_CSRF_ENABLED': False,
         'SECRET_KEY': 'test-secret-key',
-        # Keep FLASK_DEBUG default (1) so captcha is skipped in tests
+        'FLASK_DEBUG': '1',  # bypasses hCaptcha verification in app.py
     })
 
     with flask_app.app_context():
